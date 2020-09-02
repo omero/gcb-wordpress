@@ -1,3 +1,10 @@
 steps:
 - name: 'bash'
   args: ['echo', 'I am running a bash command']
+
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', "gcloud secrets versions access latest --secret=secret-data --format='get(payload.data)' | tr '_-' '/+' | base64 -d > decrypted-data.txt" ]
+
+- name: 'bash'
+  args: ['cat', 'decrypted-data.txt']
