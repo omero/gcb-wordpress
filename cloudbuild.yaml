@@ -19,7 +19,7 @@ steps:
 - name: quay.io/pantheon-public/build-tools-ci:6.x
   entrypoint: bash
   args:
-  - c
+  - -c
   - |
     export TERMINUS_MACHINE_TOKEN=$(cat terminus-token.txt) &&
     /build-tools-ci/scripts/set-environment
