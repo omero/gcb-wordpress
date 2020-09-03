@@ -1,6 +1,6 @@
 steps:
 - name: 'bash'
-  args: ['echo', 'I am running a bash command']
+  args: ['echo', '$HOME']
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
@@ -8,6 +8,8 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+  - name: 'home'
+    path: /builder/home/
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
@@ -15,6 +17,8 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+  - name: 'home'
+    path: /builder/home/
 
 - name: quay.io/pantheon-public/build-tools-ci:6.x
   entrypoint: bash
@@ -33,3 +37,5 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+  - name: 'home'
+    path: /builder/home/
