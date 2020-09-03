@@ -36,8 +36,6 @@ steps:
   args:
   - -c
   - |
-    touch /workspace/build_vars
-    export BASH_ENV=/workspace/build_vars
     export TERMINUS_MACHINE_TOKEN=$(cat terminus-token.txt) &&
     /build-tools-ci/scripts/set-environment
     
@@ -48,7 +46,7 @@ steps:
   - 'PR_NUMBER=$_PR_NUMBER'
   - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  - 'BASH_ENV=/workspace/build_vars'
+  - 'BASH_ENV=build_vars.txt'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
