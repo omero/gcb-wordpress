@@ -8,8 +8,6 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
-  - name: 'home'
-    path: /root/
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
@@ -17,8 +15,6 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
-  - name: 'home'
-    path: /root/
 
 - name: quay.io/pantheon-public/build-tools-ci:6.x
   entrypoint: bash
@@ -34,9 +30,7 @@ steps:
   - 'PR_NUMBER=$_PR_NUMBER'
   - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  - 'BASH_ENV=/root/.bashrc'
+  - 'BASH_ENV=/workspace/bash_env'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
-  - name: 'home'
-    path: /root/
