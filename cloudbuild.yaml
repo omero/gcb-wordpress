@@ -30,7 +30,7 @@ steps:
   - 'PR_NUMBER=$_PR_NUMBER'
   - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  - 'BASH_ENV=/workspace/bash_env'
+  - 'BASH_ENV=/workspace/bash_env.txt'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
