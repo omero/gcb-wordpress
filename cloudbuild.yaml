@@ -31,7 +31,7 @@ steps:
 #       # write all "build_" variables to the persistent volume "/workspace"
 #       env | grep "^build_" > /workspace/build_vars
 
-- name: quay.io/pantheon-public/build-tools-ci:6.x
+- name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
   args:
   - -c
