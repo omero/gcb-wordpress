@@ -49,6 +49,9 @@ steps:
   - -c
   - |
     source /workspace/build_vars
+    cat <<EOF >/root/.ssh/config
+    Hostname drush.in
+    IdentityFile /root/.ssh/id_rsa
     # Ensure that there's a Pantheon repo locally. If one was not
     # restored from cache, clone it fresh.
     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
