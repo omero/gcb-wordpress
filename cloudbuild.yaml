@@ -36,7 +36,7 @@ steps:
   args:
   - -c
   - |
-    export TERMINUS_MACHINE_TOKEN=$(cat terminus-token.txt) &&
+    export TERMINUS_TOKEN=$(cat terminus-token.txt) &&
     /build-tools-ci/scripts/set-environment
     
   # args: ['/build-tools-ci/scripts/set-environment']
@@ -56,6 +56,7 @@ steps:
   args:
   - -c
   - |
+    echo $TERMINUS_TOKEN
     terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
     
   # # args: ['/build-tools-ci/scripts/set-environment']
