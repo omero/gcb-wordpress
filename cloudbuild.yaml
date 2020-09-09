@@ -2,15 +2,11 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
-  args: [ '-c', "ls -la" ]
-
-- name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > terminus-token.txt" ]
+  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token" ]
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -18,7 +14,7 @@ steps:
   - -c
   - |
     /build-tools-ci/scripts/set-environment
-    export TERMINUS_TOKEN=$(cat terminus-token.txt)
+    export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
     (
       echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
     ) >> $$BASH_ENV
@@ -130,12 +126,14 @@ options:
   - 'PR_NUMBER=$_PR_NUMBER'
   - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  - 'BASH_ENV=/workspace/build_vars'
+  - 'BASH_ENV=/tmp/build/vars'
   - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
   - 'DIR_TO_PUSH=.'
   - 'CLONE_CONTENT_PARAMETER=true'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+  - name: 'build'
+    path: /tmp/build
   - name: 'pantheon_repo'
     path: /tmp/pantheon_repo
