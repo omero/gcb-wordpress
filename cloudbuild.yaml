@@ -8,6 +8,10 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
+  args: [ '-c', "cat /root/.ssh/id_rsa" ]  
+
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > terminus-token.txt" ]
 
 - name: octahedroid/pantheon-gcp-builder
@@ -30,14 +34,14 @@ steps:
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/workspace/build_vars'
 
-# - name: octahedroid/pantheon-gcp-builder
-#   entrypoint: bash
-#   args:
-#   - -c
-#   - |
-#     source /workspace/build_vars
-#     echo $$TERMINUS_TOKEN
-#     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    source /workspace/build_vars
+    echo $$TERMINUS_TOKEN
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -45,7 +49,6 @@ steps:
   - -c
   - |
     source /workspace/build_vars
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
     # Ensure that there's a Pantheon repo locally. If one was not
     # restored from cache, clone it fresh.
     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
