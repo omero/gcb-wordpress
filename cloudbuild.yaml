@@ -60,8 +60,8 @@ steps:
   - -c
   - |
     source /workspace/build_vars
-    echo $TERMINUS_TOKEN
-    terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
+    echo $$TERMINUS_TOKEN
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
     
   # # args: ['/build-tools-ci/scripts/set-environment']
   # env:
