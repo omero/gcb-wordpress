@@ -131,11 +131,11 @@ options:
   - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/workspace/build_vars'
-  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'
+  - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
   - 'DIR_TO_PUSH=.'
   - 'CLONE_CONTENT_PARAMETER=true'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
   - name: 'pantheon_repo'
-    path: /workspace/pantheon_repo
+    path: /tmp/pantheon_repo
