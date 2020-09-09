@@ -36,58 +36,21 @@ steps:
     source /workspace/build_vars
     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
 
-- name: 'gcr.io/cloud-builders/git'
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    source /workspace/build_vars
-    chmod 600 /root/.ssh/id_pantheon
-    cat <<EOF >/root/.ssh/config
-    StrictHostKeyChecking no
-    IdentityFile /root/.ssh/id_pantheon
-    EOF
-    if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
-      cd $$PANTHEON_REPO_DIR
-      git init
-      git remote add pantheon ssh://codeserver.dev.1807736a-9a9f-4230-808d-0c01a9d80626@codeserver.dev.1807736a-9a9f-4230-808d-0c01a9d80626.drush.in:2222/~/repository.git
-      git remote -v
-    fi
-    git fetch pantheon
-    
-    # If the current branch is on Pantheon, check it out.
-    # If it is not, checkout master and then make a new branch.
-    if git ls-remote pantheon | grep "refs/heads/$$TERMINUS_ENV$" > /dev/null; then
-      git checkout $$TERMINUS_ENV
-      git pull
-    else
-      git checkout master
-      git pull
-      git checkout -b $$TERMINUS_ENV
-    fi
-    ls -la $$PANTHEON_REPO_DIR
-
-
-  env:
-  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'  
-  
-# - name: octahedroid/pantheon-gcp-builder
-#   entrypoint: bash
+# - name: 'gcr.io/cloud-builders/git'
+#   entrypoint: 'bash'
 #   args:
-#   - -c
+#   - '-c'
 #   - |
 #     source /workspace/build_vars
-#     chmod 600 /root/.ssh/id_rsa
+#     chmod 600 /root/.ssh/id_pantheon
 #     cat <<EOF >/root/.ssh/config
-#     # Hostname drush.in
-#     IdentityFile /root/.ssh/id_rsa
+#     StrictHostKeyChecking no
+#     IdentityFile /root/.ssh/id_pantheon
 #     EOF
-#     # Ensure that there's a Pantheon repo locally. If one was not
-#     # restored from cache, clone it fresh.
 #     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
 #       cd $$PANTHEON_REPO_DIR
 #       git init
-#       git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
+#       git remote add pantheon ssh://codeserver.dev.1807736a-9a9f-4230-808d-0c01a9d80626@codeserver.dev.1807736a-9a9f-4230-808d-0c01a9d80626.drush.in:2222/~/repository.git
 #       git remote -v
 #     fi
 #     git fetch pantheon
@@ -103,9 +66,46 @@ steps:
 #       git checkout -b $$TERMINUS_ENV
 #     fi
 #     ls -la $$PANTHEON_REPO_DIR
-    
+
+
 #   env:
 #   - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'  
+  
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    source /workspace/build_vars
+    chmod 600 /root/.ssh/id_pantheon
+    cat <<EOF >/root/.ssh/config
+    StrictHostKeyChecking no
+    IdentityFile /root/.ssh/id_pantheon
+    EOF
+    # Ensure that there's a Pantheon repo locally. If one was not
+    # restored from cache, clone it fresh.
+    if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
+      cd $$PANTHEON_REPO_DIR
+      git init
+      git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
+      git remote -v
+    fi
+    git fetch pantheon
+    
+    # If the current branch is on Pantheon, check it out.
+    # If it is not, checkout master and then make a new branch.
+    if git ls-remote pantheon | grep "refs/heads/$$TERMINUS_ENV$" > /dev/null; then
+      git checkout $$TERMINUS_ENV
+      git pull
+    else
+      git checkout master
+      git pull
+      git checkout -b $$TERMINUS_ENV
+    fi
+    ls -la $$PANTHEON_REPO_DIR
+    
+  env:
+  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'  
 
 options:
   volumes:
