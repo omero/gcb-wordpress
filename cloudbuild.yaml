@@ -30,24 +30,25 @@ steps:
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/workspace/build_vars'
 
+# - name: octahedroid/pantheon-gcp-builder
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     source /workspace/build_vars
+#     echo $$TERMINUS_TOKEN
+#     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
+
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
   args:
   - -c
   - |
     source /workspace/build_vars
-    echo $$TERMINUS_TOKEN
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
-- name: octahedroid/pantheon-gcp-builder
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source /workspace/build_vars
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
     # Ensure that there's a Pantheon repo locally. If one was not
     # restored from cache, clone it fresh.
     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
-      mkdir $$PANTHEON_REPO_DIR
       cd $$PANTHEON_REPO_DIR
       git init
       git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
