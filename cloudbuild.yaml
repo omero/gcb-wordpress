@@ -36,6 +36,7 @@ steps:
   args:
   - -c
   - |
+    export TERMINUS_TOKEN=$(cat terminus-token.txt)
     (
       echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
     )
