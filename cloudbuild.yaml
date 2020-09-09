@@ -68,11 +68,11 @@ steps:
     ls -la $$PANTHEON_REPO_DIR
     
   env:
-  - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'  
+  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'  
 
 options:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
   - name: 'pantheon_repo'
-    path: /tmp/pantheon_repo
+    path: /workspace/pantheon_repo
