@@ -44,10 +44,10 @@ steps:
   - |
     source /workspace/build_vars
     chmod 600 /root/.ssh/id_rsa
-    # cat <<EOF >/root/.ssh/config
+    cat <<EOF >/root/.ssh/config
     # Hostname drush.in
-    # IdentityFile /root/.ssh/id_rsa
-    # EOF
+    IdentityFile /root/.ssh/id_rsa
+    EOF
     ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
     # Ensure that there's a Pantheon repo locally. If one was not
     # restored from cache, clone it fresh.
