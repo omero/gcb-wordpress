@@ -61,16 +61,44 @@ steps:
   - |
     source /workspace/build_vars
     echo $$TERMINUS_TOKEN
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
-    
-  # # args: ['/build-tools-ci/scripts/set-environment']
-  # env:
-  # - 'CI_BRANCH=$_HEAD_BRANCH'
-  # - 'CI_BUILD_NUMBER=$_PR_NUMBER'
-  # - 'PR_NUMBER=$_PR_NUMBER'
-  # - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
-  # - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  # - 'BASH_ENV=build_vars.txt'
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    source /workspace/build_vars
+    # Ensure that there's a Pantheon repo locally. If one was not
+    # restored from cache, clone it fresh.
+    if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
+      mkdir $$PANTHEON_REPO_DIR
+      cd $$PANTHEON_REPO_DIR
+      git init
+      git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
+      git remote -v
+    fi
+    git fetch pantheon
+    
+    # If the current branch is on Pantheon, check it out.
+    # If it is not, checkout master and then make a new branch.
+    if git ls-remote pantheon | grep "refs/heads/$$TERMINUS_ENV$" > /dev/null; then
+      git checkout $$TERMINUS_ENV
+      git pull
+    else
+      git checkout master
+      git pull
+      git checkout -b $$TERMINUS_ENV
+    fi
+    ls -la $$PANTHEON_REPO_DIR
+    
+  env:
+  - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'  
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+  - name: 'pantheon_repo'
+    path: /tmp/pantheon_repo
