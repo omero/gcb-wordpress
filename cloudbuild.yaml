@@ -50,3 +50,22 @@ steps:
   volumes:
   - name: 'ssh'
     path: /root/.ssh
+
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
+    
+  # # args: ['/build-tools-ci/scripts/set-environment']
+  # env:
+  # - 'CI_BRANCH=$_HEAD_BRANCH'
+  # - 'CI_BUILD_NUMBER=$_PR_NUMBER'
+  # - 'PR_NUMBER=$_PR_NUMBER'
+  # - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
+  # - 'DEFAULT_SITE=$_TERMINUS_SITE'
+  # - 'BASH_ENV=build_vars.txt'
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
