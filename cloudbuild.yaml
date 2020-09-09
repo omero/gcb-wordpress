@@ -36,11 +36,11 @@ steps:
   args:
   - -c
   - |
+    /build-tools-ci/scripts/set-environment
     export TERMINUS_TOKEN=$(cat terminus-token.txt)
     (
       echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
     ) >> $$BASH_ENV
-    /build-tools-ci/scripts/set-environment
     
   # args: ['/build-tools-ci/scripts/set-environment']
   env:
