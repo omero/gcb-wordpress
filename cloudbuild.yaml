@@ -38,7 +38,7 @@ steps:
   - |
     cat terminus-token.txt
     export TERMINUS_TOKEN=$(cat terminus-token.txt)
-    echo $TERMINUS_TOKEN
+    echo "terminus token from env $$TERMINUS_TOKEN"
     env | grep "^TERMINUS_"
     /build-tools-ci/scripts/set-environment
     
