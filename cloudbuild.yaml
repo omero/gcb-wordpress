@@ -37,7 +37,7 @@ steps:
   - -c
   - |
     cat terminus-token.txt
-    TERMINUS_TOKEN=$(cat terminus-token.txt)
+    export TERMINUS_TOKEN=$(cat terminus-token.txt)
     echo $TERMINUS_TOKEN
     /build-tools-ci/scripts/set-environment
     
