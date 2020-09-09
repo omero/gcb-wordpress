@@ -2,6 +2,10 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
+  args: [ '-c', "ls -la" ]
+
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
 
 - name: gcr.io/cloud-builders/gcloud
