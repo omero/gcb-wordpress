@@ -2,7 +2,7 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_rsa" ]
+  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
@@ -42,12 +42,12 @@ steps:
   - '-c'
   - |
     source /workspace/build_vars
-    chmod 600 /root/.ssh/id_rsa
+    chmod 600 /root/.ssh/id_pantheon
     cat <<EOF >/root/.ssh/config
     Hostname drush.in
-    IdentityFile /root/.ssh/id_rsa
+    IdentityFile /root/.ssh/id_pantheon
     EOF
-    ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+    ssh-keyscan -t rsa drush.in > /root/.ssh/known_hosts
     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
       cd $$PANTHEON_REPO_DIR
       git init
