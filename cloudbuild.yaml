@@ -1,6 +1,6 @@
 steps:
 - name: 'bash'
-  args: ['echo', '$HOME']
+  args: ['echo', '$$HOME']
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
