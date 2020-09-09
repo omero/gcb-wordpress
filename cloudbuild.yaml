@@ -20,13 +20,7 @@ steps:
     ) >> $$BASH_ENV
     
   # args: ['/build-tools-ci/scripts/set-environment']
-  env:
-  - 'CI_BRANCH=$_HEAD_BRANCH'
-  - 'CI_BUILD_NUMBER=$_PR_NUMBER'
-  - 'PR_NUMBER=$_PR_NUMBER'
-  - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
-  - 'DEFAULT_SITE=$_TERMINUS_SITE'
-  - 'BASH_ENV=/workspace/build_vars'
+
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -69,9 +63,6 @@ steps:
     fi
     ls -la $$PANTHEON_REPO_DIR
     
-  env:
-  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'
-
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
   args:
@@ -101,11 +92,44 @@ steps:
             fi
         fi
     fi
-    
-  env:
-  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'
+
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    rsync -av --exclude='.git'  $$DIR_TO_PUSH/ $$PANTHEON_REPO_DIR  --delete
+    # For easier debugging, show what files have changed.
+    git -C $$PANTHEON_REPO_DIR status
+
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    export COMMIT_MSG=$(git log -1 --pretty=%B)
+    cd $$PANTHEON_REPO_DIR
+    if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
+      export CLONE_CONTENT="--clone-content"
+    else
+      export CLONE_CONTENT=""
+    fi
+    # This command will commit any changed files and push to Pantheon.
+    # New multidevs will be created as necessary.
+    terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: $$COMMIT_MSG"
+
 
 options:
+  env:
+  - 'CI_BRANCH=$_HEAD_BRANCH'
+  - 'CI_BUILD_NUMBER=$_PR_NUMBER'
+  - 'PR_NUMBER=$_PR_NUMBER'
+  - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
+  - 'DEFAULT_SITE=$_TERMINUS_SITE'
+  - 'BASH_ENV=/workspace/build_vars'
+  - 'PANTHEON_REPO_DIR=/workspace/pantheon_repo'
+  - 'DIR_TO_PUSH=.'
+  - 'CLONE_CONTENT_PARAMETER=true'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
