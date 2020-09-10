@@ -1,12 +1,15 @@
 steps:
 
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/cloud-builders/git
+  args: ['clone', '$_HEAD_REPO_URL']
+
+- name: gcr.io/cloud-builders/git
   entrypoint: bash
   args:
   - -c
   - |
-    echo $_HEAD_REPO_URL
-    # git remote -v
+    ls -la
+    git remote -v
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
