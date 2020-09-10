@@ -8,7 +8,7 @@ steps:
   args:
   - -c
   - |
-    echo $_URL
+    echo $_URRL
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
@@ -147,3 +147,6 @@ steps:
 #     path: /tmp/build
 #   - name: 'pantheon_repo'
 #     path: /tmp/pantheon_repo
+
+substitutions:
+  _URRL: $(push.repository.html_url)
