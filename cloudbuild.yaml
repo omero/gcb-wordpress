@@ -8,7 +8,7 @@ steps:
   args:
   - -c
   - |
-    echo $(push.commits)
+    echo $_URL
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
