@@ -149,4 +149,4 @@ steps:
 #     path: /tmp/pantheon_repo
 
 substitutions:
-  _URRL: $(push.repository.html_url)
+  _URRL: $(pull_request.pull_request.body)
