@@ -5,7 +5,8 @@ steps:
   args:
   - -c
   - |
-    git remote -v
+    echo $_HEAD_REPO_URL
+    # git remote -v
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
