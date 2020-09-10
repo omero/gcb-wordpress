@@ -1,14 +1,15 @@
 steps:
 
 - name: gcr.io/cloud-builders/git
-  args: ['clone', '$_HEAD_REPO_URL']
+  args: ['clone', '$_HEAD_REPO_URL', '/workspace']
 
 - name: gcr.io/cloud-builders/git
   entrypoint: bash
   args:
   - -c
   - |
-    echo $_URRL
+    ls -la 
+    git remote -v
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
@@ -147,6 +148,3 @@ steps:
 #     path: /tmp/build
 #   - name: 'pantheon_repo'
 #     path: /tmp/pantheon_repo
-
-substitutions:
-  _URRL: $(pull_request.pull_request.body)
