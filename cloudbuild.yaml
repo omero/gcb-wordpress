@@ -8,8 +8,7 @@ steps:
   args:
   - -c
   - |
-    ls -la
-    git remote -v
+    echo $(push.commits)
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
