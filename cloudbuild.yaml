@@ -9,8 +9,8 @@ steps:
 #     echo $_BASE_BRANCH
 #     echo $_HEAD_REPO_URL
 
-- name: gcr.io/cloud-builders/git
-  args: ['clone', '$_HEAD_REPO_URL', 'repo']
+# - name: gcr.io/cloud-builders/git
+#   args: ['clone', '$_HEAD_REPO_URL', 'repo']
 
 # - name: gcr.io/cloud-builders/git
 #   args: ['fetch', 'origin', 'pull/$_PULL_REQUEST_ID/head:$_HEAD_BRANCH']
@@ -121,15 +121,16 @@ steps:
     rsync -av --exclude='.git'  $$DIR_TO_PUSH $$PANTHEON_REPO_DIR  --delete
     # For easier debugging, show what files have changed.
     git -C $$PANTHEON_REPO_DIR status
-  dir: repo
+  # dir: repo
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
   args:
   - -c
   - |
-    export COMMIT_MSG=$(git log -1 --pretty=%B)
-    echo $$COMMIT_MSG
+    # export COMMIT_MSG=$(git log -1 --pretty=%B)
+    # echo $$COMMIT_MSG
+    git init
     git remote add origin git@github.com:omero/gcb-wordpress.git
     cd $$PANTHEON_REPO_DIR
     if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
@@ -140,7 +141,7 @@ steps:
     # This command will commit any changed files and push to Pantheon.
     # New multidevs will be created as necessary.
     terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: $$COMMIT_MSG"
-  dir: repo
+  # dir: repo
 
 
 options:
@@ -152,7 +153,7 @@ options:
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/tmp/build/vars'
   - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
-  - 'DIR_TO_PUSH=/workspace/repo'
+  - 'DIR_TO_PUSH=.'
   - 'CLONE_CONTENT_PARAMETER=true'
   volumes:
   - name: 'ssh'
