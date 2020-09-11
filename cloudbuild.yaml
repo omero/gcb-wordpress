@@ -1,16 +1,34 @@
 steps:
 
+# - name: gcr.io/cloud-builders/git
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     echo $_HEAD_BRANCH
+#     echo $_BASE_BRANCH
+#     echo $_HEAD_REPO_URL
+
+- name: gcr.io/cloud-builders/git
+  args: ['clone', '$_HEAD_REPO_URL', 'repo']
+
+- name: gcr.io/cloud-builders/git
+  args: ['fetch', 'origin', 'pull/$_PULL_REQUEST_ID/head:$_HEAD_BRANCH']
+  dir: repo
+
+- name: gcr.io/cloud-builders/git
+  args: ['checkout', '$_HEAD_BRANCH']
+  dir: repo
+
 - name: gcr.io/cloud-builders/git
   entrypoint: bash
   args:
   - -c
   - |
-    echo $_HEAD_BRANCH
-    echo $_BASE_BRANCH
-    echo $_HEAD_REPO_URL
+    git remote -v
+    git log -1 --pretty=%B
+  dir: repo
 
-# - name: gcr.io/cloud-builders/git
-#   args: ['clone', '$_HEAD_REPO_URL', 'repo']
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
