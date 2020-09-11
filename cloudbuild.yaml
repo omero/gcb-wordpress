@@ -8,7 +8,6 @@ steps:
     echo $_COMMIT_MESSAGE
     echo $_PERM_LEVEL
     echo $_IS_COLLABORATOR
-    echo $_PULL_PAYLOAD
 
 # - name: gcr.io/cloud-builders/gcloud
 #   entrypoint: 'bash'
