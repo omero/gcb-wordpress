@@ -30,7 +30,7 @@ steps:
   args:
   - -c
   - |
-    source /workspace/build_vars
+    source /tmp/build/vars
     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
 
 - name: octahedroid/pantheon-gcp-builder
@@ -38,7 +38,7 @@ steps:
   args:
   - -c
   - |
-    source /workspace/build_vars
+    source /tmp/build/vars
     chmod 600 /root/.ssh/id_pantheon
     cat <<EOF >/root/.ssh/config
     StrictHostKeyChecking no
@@ -71,7 +71,7 @@ steps:
   args:
   - -c
   - |
-    source /workspace/build_vars
+    source /tmp/build/vars
     if [[ $$TERMINUS_ENV = ci-* || $$TERMINUS_ENV = pr-*   ]]
     then
         echo "May need to delete old ci- or pr- environments to make room for this one"
@@ -112,6 +112,7 @@ steps:
   - -c
   - |
     export COMMIT_MSG=$(git log -1 --pretty=%B)
+    echo $$COMMIT_MSG
     cd $$PANTHEON_REPO_DIR
     if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
       export CLONE_CONTENT="--clone-content"
