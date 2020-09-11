@@ -1,32 +1,50 @@
 steps:
 
-- name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
+steps:
 
 - name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token" ]
-
-- name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
   args:
   - -c
   - |
+    gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon
+    gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
     /build-tools-ci/scripts/set-environment
     export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
-    (
-      echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
-    ) >> $$BASH_ENV
+    # (
+    #   echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
+    # ) >> $$BASH_ENV
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
     
 
-- name: octahedroid/pantheon-gcp-builder
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source /tmp/build/vars
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
+# - name: gcr.io/cloud-builders/gcloud
+#   entrypoint: 'bash'
+#   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
+
+# - name: gcr.io/cloud-builders/gcloud
+#   entrypoint: 'bash'
+#   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token" ]
+
+# - name: octahedroid/pantheon-gcp-builder
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     /build-tools-ci/scripts/set-environment
+#     export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
+#     (
+#       echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
+#     ) >> $$BASH_ENV
+    
+
+# - name: octahedroid/pantheon-gcp-builder
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     source /tmp/build/vars
+#     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
+
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
