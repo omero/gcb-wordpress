@@ -130,10 +130,9 @@ steps:
   - |
     # export COMMIT_MSG=$(git log -1 --pretty=%B)
     # echo $$COMMIT_MSG
-    git init
+    cd $$PANTHEON_REPO_DIR
     git remote add origin git@github.com:omero/gcb-wordpress.git
     git remote -v
-    cd $$PANTHEON_REPO_DIR
     if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
       export CLONE_CONTENT="--clone-content"
     else
