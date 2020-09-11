@@ -10,7 +10,7 @@ steps:
 #     echo $_HEAD_REPO_URL
 
 - name: gcr.io/cloud-builders/git
-  args: ['clone', '$_HEAD_REPO_URL', 'repo']
+  args: ['clone', 'git@github.com:omero/gcb-wordpress.git', 'repo']
 
 - name: gcr.io/cloud-builders/git
   args: ['fetch', 'origin', 'pull/$_PR_NUMBER/head:$_HEAD_BRANCH']
