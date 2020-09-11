@@ -9,12 +9,6 @@ steps:
   - |
     gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon
     gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
-    /build-tools-ci/scripts/set-environment
-    export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
-    # (
-    #   echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
-    # ) >> $$BASH_ENV
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
     
 
 # - name: gcr.io/cloud-builders/gcloud
@@ -25,16 +19,17 @@ steps:
 #   entrypoint: 'bash'
 #   args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token" ]
 
-# - name: octahedroid/pantheon-gcp-builder
-#   entrypoint: bash
-#   args:
-#   - -c
-#   - |
-#     /build-tools-ci/scripts/set-environment
-#     export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
-#     (
-#       echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
-#     ) >> $$BASH_ENV
+- name: octahedroid/pantheon-gcp-builder
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    /build-tools-ci/scripts/set-environment
+    export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
+    # (
+    #   echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
+    # ) >> $$BASH_ENV
     
 
 # - name: octahedroid/pantheon-gcp-builder
