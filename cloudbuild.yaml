@@ -101,10 +101,10 @@ steps:
   args:
   - -c
   - |
-    rsync -av --exclude='.git'  $$DIR_TO_PUSH/ $$PANTHEON_REPO_DIR  --delete
+    rsync -av --exclude='.git'  $$DIR_TO_PUSH $$PANTHEON_REPO_DIR  --delete
     # For easier debugging, show what files have changed.
     git -C $$PANTHEON_REPO_DIR status
-  dir: 'repo'
+  dir: $$DIR_TO_PUSH
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -121,7 +121,7 @@ steps:
     # This command will commit any changed files and push to Pantheon.
     # New multidevs will be created as necessary.
     terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: $$COMMIT_MSG"
-  dir: 'repo'
+  dir: $$DIR_TO_PUSH
 
 
 options:
@@ -133,7 +133,7 @@ options:
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/tmp/build/vars'
   - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
-  - 'DIR_TO_PUSH=repo'
+  - 'DIR_TO_PUSH=/workspace/repo'
   - 'CLONE_CONTENT_PARAMETER=true'
   volumes:
   - name: 'ssh'
