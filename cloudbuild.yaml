@@ -6,6 +6,8 @@ steps:
   - -c
   - |
     echo $_COMMIT_MESSAGE
+    echo $_PERM_LEVEL
+    echo $_IS_COLLABORATOR
 
 
 # - name: gcr.io/cloud-builders/gcloud
