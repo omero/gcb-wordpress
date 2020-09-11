@@ -19,7 +19,6 @@ steps:
   - |
     /build-tools-ci/scripts/set-environment
     export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
-    export GITHUB_TOKEN=$(cat /tmp/build/github-token)
     terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
 
 - name: octahedroid/pantheon-gcp-builder
@@ -61,6 +60,7 @@ steps:
   - -c
   - |
     source /tmp/build/vars
+    export GITHUB_TOKEN=$(cat /tmp/build/github-token)
     if [[ $$TERMINUS_ENV = ci-* || $$TERMINUS_ENV = pr-*   ]]
     then
         echo "May need to delete old ci- or pr- environments to make room for this one"
