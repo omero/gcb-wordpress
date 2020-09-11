@@ -13,7 +13,7 @@ steps:
   args: ['clone', '$_HEAD_REPO_URL', 'repo']
 
 - name: gcr.io/cloud-builders/git
-  args: ['fetch', 'origin', 'pull/$_PULL_REQUEST_ID/head:$_HEAD_BRANCH']
+  args: ['fetch', 'origin', 'pull/$_PR_NUMBER/head:$_HEAD_BRANCH']
   dir: repo
 
 - name: gcr.io/cloud-builders/git
