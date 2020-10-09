@@ -155,9 +155,8 @@ steps:
 
 options:
   env:
-  - 'CI_BRANCH=$_HEAD_BRANCH'
+  - 'CI_BRANCH=$BRANCH_NAME'
   - 'CI_BUILD_NUMBER=$_PR_NUMBER'
-  - 'CI_PULL_REQUEST=$_HEAD_REPO_URL'
   - 'DEFAULT_SITE=$_TERMINUS_SITE'
   - 'BASH_ENV=/tmp/build/vars'
   - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
