@@ -39,118 +39,118 @@ steps:
     fi
 
 
-- name: octahedroid/pantheon-gcp-builder
-  id: "checkout-from-pantheon"
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source $$BASH_ENV
-    chmod 600 /root/.ssh/id_pantheon
-    cat <<EOF >/root/.ssh/config
-    StrictHostKeyChecking no
-    IdentityFile /root/.ssh/id_pantheon
-    EOF
-    # Ensure that there's a Pantheon repo locally. If one was not
-    # restored from cache, clone it fresh.
-    if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
-      cd $$PANTHEON_REPO_DIR
-      git init
-      git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
-      git remote -v
-    fi
-    git fetch pantheon
+# - name: octahedroid/pantheon-gcp-builder
+#   id: "checkout-from-pantheon"
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     source $$BASH_ENV
+#     chmod 600 /root/.ssh/id_pantheon
+#     cat <<EOF >/root/.ssh/config
+#     StrictHostKeyChecking no
+#     IdentityFile /root/.ssh/id_pantheon
+#     EOF
+#     # Ensure that there's a Pantheon repo locally. If one was not
+#     # restored from cache, clone it fresh.
+#     if [ ! -d "$$PANTHEON_REPO_DIR/.git" ]; then
+#       cd $$PANTHEON_REPO_DIR
+#       git init
+#       git remote add pantheon $(terminus connection:info $$TERMINUS_SITE.dev --field=git_url)
+#       git remote -v
+#     fi
+#     git fetch pantheon
     
-    # If the current branch is on Pantheon, check it out.
-    # If it is not, checkout master and then make a new branch.
-    if git ls-remote pantheon | grep "refs/heads/$$TERMINUS_ENV$" > /dev/null; then
-      git checkout $$TERMINUS_ENV
-      git pull
-    else
-      git checkout master
-      git pull
-      git checkout -b $$TERMINUS_ENV
-    fi
-    ls -la $$PANTHEON_REPO_DIR
+#     # If the current branch is on Pantheon, check it out.
+#     # If it is not, checkout master and then make a new branch.
+#     if git ls-remote pantheon | grep "refs/heads/$$TERMINUS_ENV$" > /dev/null; then
+#       git checkout $$TERMINUS_ENV
+#       git pull
+#     else
+#       git checkout master
+#       git pull
+#       git checkout -b $$TERMINUS_ENV
+#     fi
+#     ls -la $$PANTHEON_REPO_DIR
     
-- name: octahedroid/pantheon-gcp-builder
-  id: "mutlidev-cleanup"
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source $$BASH_ENV
-    if [[ $$TERMINUS_ENV = ci-* || $$TERMINUS_ENV = pr-*   ]]
-    then
-        echo "May need to delete old ci- or pr- environments to make room for this one"
-        echo "Getting list of all environments"
-        export ENV_LIST=$(terminus env:list $$TERMINUS_SITE --field=id)
-        echo "Checking if current environment is in list of existing environments"
-        if [[ $(echo "$${ENV_LIST}" | grep -x $${TERMINUS_ENV})  ]]
-        then
-            echo "$${TERMINUS_ENV} found in the list of environments"
-            exit 0
-        else
-            echo "$${TERMINUS_ENV} not found in the list of environments."
-            echo "Running clean-up script to delete old pr- environments"
-            terminus -n build:env:delete:pr "$$TERMINUS_SITE" --yes
-            if [[ $$TERMINUS_ENV = ci-*  ]]
-            then
-                echo "Running clean-up script to delete old ci- environments"
-                terminus -n build:env:delete:ci "$$TERMINUS_SITE" --keep=2 --yes
-            else
-                echo "Skipping deletion of ci- envs"
-            fi
-        fi
-    fi
+# - name: octahedroid/pantheon-gcp-builder
+#   id: "mutlidev-cleanup"
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     source $$BASH_ENV
+#     if [[ $$TERMINUS_ENV = ci-* || $$TERMINUS_ENV = pr-*   ]]
+#     then
+#         echo "May need to delete old ci- or pr- environments to make room for this one"
+#         echo "Getting list of all environments"
+#         export ENV_LIST=$(terminus env:list $$TERMINUS_SITE --field=id)
+#         echo "Checking if current environment is in list of existing environments"
+#         if [[ $(echo "$${ENV_LIST}" | grep -x $${TERMINUS_ENV})  ]]
+#         then
+#             echo "$${TERMINUS_ENV} found in the list of environments"
+#             exit 0
+#         else
+#             echo "$${TERMINUS_ENV} not found in the list of environments."
+#             echo "Running clean-up script to delete old pr- environments"
+#             terminus -n build:env:delete:pr "$$TERMINUS_SITE" --yes
+#             if [[ $$TERMINUS_ENV = ci-*  ]]
+#             then
+#                 echo "Running clean-up script to delete old ci- environments"
+#                 terminus -n build:env:delete:ci "$$TERMINUS_SITE" --keep=2 --yes
+#             else
+#                 echo "Skipping deletion of ci- envs"
+#             fi
+#         fi
+#     fi
 
-- name: octahedroid/pantheon-gcp-builder
-  id: "local-clone-pantheon-repo"
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    rsync -av --exclude='.git'  $$DIR_TO_PUSH $$PANTHEON_REPO_DIR  --delete
-    # For easier debugging, show what files have changed.
-    git -C $$PANTHEON_REPO_DIR status
+# - name: octahedroid/pantheon-gcp-builder
+#   id: "local-clone-pantheon-repo"
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     rsync -av --exclude='.git'  $$DIR_TO_PUSH $$PANTHEON_REPO_DIR  --delete
+#     # For easier debugging, show what files have changed.
+#     git -C $$PANTHEON_REPO_DIR status
 
-- name: octahedroid/pantheon-gcp-builder
-  id: "commit-code-and-push-pantheon"
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    cd $$PANTHEON_REPO_DIR
-    if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
-      export CLONE_CONTENT="--clone-content"
-    else
-      export CLONE_CONTENT=""
-    fi
-    # This command will commit any changed files and push to Pantheon.
-    # New multidevs will be created as necessary.
-    terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: sync code"
+# - name: octahedroid/pantheon-gcp-builder
+#   id: "commit-code-and-push-pantheon"
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     cd $$PANTHEON_REPO_DIR
+#     if [ "true" = $$CLONE_CONTENT_PARAMETER ] ; then
+#       export CLONE_CONTENT="--clone-content"
+#     else
+#       export CLONE_CONTENT=""
+#     fi
+#     # This command will commit any changed files and push to Pantheon.
+#     # New multidevs will be created as necessary.
+#     terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: sync code"
 
-- name: gcr.io/cloud-builders/curl
-  id: "internal-notification" 
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source $$BASH_ENV
-    if [ -z "$$GITHUB_TOKEN" ]; then
-      echo "NO GITHUB TOKEN SET"
-      echo "Please input your GITHUB_TOKEN value either in the settings for this project"
-      exit 1
-    else
-      curl -X POST -H "Authorization: token $$GITHUB_TOKEN" \
-        --data \
-        "{ \
-            \"state\": \"success\", \
-            \"context\": \"$_TERMINUS_SITE-backend-main\", \
-            \"description\": \"Backend Deployed\", \
-            \"target_url\": \"$$DEV_SITE_URL\" \
-        }" $_GH_STATUS_URL
-    fi
+# - name: gcr.io/cloud-builders/curl
+#   id: "internal-notification" 
+#   entrypoint: bash
+#   args:
+#   - -c
+#   - |
+#     source $$BASH_ENV
+#     if [ -z "$$GITHUB_TOKEN" ]; then
+#       echo "NO GITHUB TOKEN SET"
+#       echo "Please input your GITHUB_TOKEN value either in the settings for this project"
+#       exit 1
+#     else
+#       curl -X POST -H "Authorization: token $$GITHUB_TOKEN" \
+#         --data \
+#         "{ \
+#             \"state\": \"success\", \
+#             \"context\": \"$_TERMINUS_SITE-backend-main\", \
+#             \"description\": \"Backend Deployed\", \
+#             \"target_url\": \"$$DEV_SITE_URL\" \
+#         }" $_GH_STATUS_URL
+#     fi
 
 
 options:
@@ -163,7 +163,7 @@ options:
   - 'PANTHEON_REPO_DIR=/tmp/pantheon_repo'
   - 'DIR_TO_PUSH=.'
   - 'CLONE_CONTENT_PARAMETER=true'
-  - 'DEFAULT_BRANCH=default'
+  - 'DEFAULT_BRANCH=master'
   volumes:
   - name: 'ssh'
     path: /root/.ssh
