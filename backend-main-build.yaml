@@ -152,7 +152,6 @@ steps:
         }" $_GH_STATUS_URL/$COMMIT_SHA
     fi
 
-
 options:
   env:
   - 'CI_BRANCH=$BRANCH_NAME'
