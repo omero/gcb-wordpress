@@ -34,9 +34,11 @@ steps:
         "{ \
             \"state\": \"pending\", \
             \"context\": \"$_TERMINUS_SITE-backend-main\", \
+            \"sha\": \"$COMMIT_SHA\", \
             \"description\": \"Build and Deploy backend\" \
         }" $_GH_STATUS_URL
     fi
+    echo $_GH_STATUS_URL
 
 
 # - name: octahedroid/pantheon-gcp-builder
