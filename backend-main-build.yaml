@@ -5,9 +5,9 @@ steps:
   args:
   - -c
   - |
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-ssh-key > /root/.ssh/id_pantheon
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-ssh-key > /root/.ssh/id_pantheon
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
 
 - name: octahedroid/pantheon-gcp-builder
   id: "internal-auth"
