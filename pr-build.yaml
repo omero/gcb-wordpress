@@ -50,7 +50,6 @@ steps:
 #         }" $_GH_STATUS_URL
 #     fi
 
-
 - name: gcr.io/cloud-builders/docker
   id: frontend-docker-build-push
   entrypoint: bash
