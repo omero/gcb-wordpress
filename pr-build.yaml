@@ -66,8 +66,7 @@ steps:
   args: 
   - -c 
   - |
-    gcloud run deploy $_FRONTEND_SITE \ 
-    --image $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA \
+    gcloud run deploy $_FRONTEND_SITE --image $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA \
     --region $_FRONTEND_LOCATION --platform managed --memory 512Mi --allow-unauthenticated \
     --no-traffic --revision-suffix pr-$_PR_NUMBER-$SHORT_SHA \
     --update-env-vars BACKEND_SITE=_TERMINUS_SITE,BACKEND_ENV=pr-$_PR_NUMBER
