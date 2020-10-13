@@ -72,6 +72,12 @@ steps:
     --no-traffic --revision-suffix pr-$_PR_NUMBER-$SHORT_SHA \
     --update-env-vars BACKEND_SITE=_TERMINUS_SITE,BACKEND_ENV=pr-$_PR_NUMBER
 
+- name: gcr.io/cloud-builders/gcloud
+  id: frontend-cloud-run-update-traffic
+  entrypoint: bash
+  args: 
+  - -c 
+  - |
     gcloud beta run services update-traffic $_FRONTEND_SITE \
     --region $_FRONTEND_LOCATION --platform managed \
     --update-tags pr-$_PR_NUMBER=$_FRONTEND_SITE-pr-$_PR_NUMBER-$SHORT_SHA
