@@ -1,14 +1,19 @@
 steps:
+# rememeber change this value wordpress-decoupled-demo -> $_FRONTEND_SITE on --secret
 - name: gcr.io/cloud-builders/gcloud
   id: "internal-get-secrets"
   entrypoint: 'bash'
   args:
   - -c
   - |
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-ssh-key > /root/.ssh/id_pantheon
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-ssh-key > /root/.ssh/id_pantheon
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
 
+
+# Authentication
+# This step get the secrets from GCP secret manager and uses to authenticate via terminus
+# Also takes advantage to send notifications to GH statuses if the GH token exist
 - name: octahedroid/pantheon-gcp-builder
   id: "internal-auth"
   entrypoint: bash
@@ -36,11 +41,18 @@ steps:
             \"context\": \"$_TERMINUS_SITE-backend-pr\", \
             \"description\": \"Build and Deploy backend\" \
         }" $_GH_STATUS_URL
+      curl -X POST -H "Authorization: token $$GITHUB_TOKEN" \
+        --data \
+        "{ \
+            \"state\": \"pending\", \
+            \"context\": \"$_TERMINUS_SITE-frontend-pr\", \
+            \"description\": \"Build and Deploy frontend\" \
+        }" $_GH_STATUS_URL
     fi
 
 
 - name: octahedroid/pantheon-gcp-builder
-  id: "checkout-from-pantheon"
+  id: "backend-checkout-from-pantheon"
   entrypoint: bash
   args:
   - -c
@@ -74,7 +86,7 @@ steps:
     ls -la $$PANTHEON_REPO_DIR
     
 - name: octahedroid/pantheon-gcp-builder
-  id: "mutlidev-cleanup"
+  id: "backend-mutlidev-cleanup"
   entrypoint: bash
   args:
   - -c
@@ -105,7 +117,7 @@ steps:
     fi
 
 - name: octahedroid/pantheon-gcp-builder
-  id: "local-clone-pantheon-repo"
+  id: "backend-local-clone-pantheon-repo"
   entrypoint: bash
   args:
   - -c
@@ -115,7 +127,7 @@ steps:
     git -C $$PANTHEON_REPO_DIR status
 
 - name: octahedroid/pantheon-gcp-builder
-  id: "commit-code-and-push-pantheon"
+  id: "backend-commit-code-and-push-pantheon"
   entrypoint: bash
   args:
   - -c
@@ -131,7 +143,7 @@ steps:
     terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: sync PR $_PULL_REQUEST_TITLE"
 
 - name: gcr.io/cloud-builders/curl
-  id: "internal-notification" 
+  id: "internal-notification-backend" 
   entrypoint: bash
   args:
   - -c
