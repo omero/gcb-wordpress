@@ -70,9 +70,9 @@ steps:
     gcloud run deploy $_FRONTEND_SITE \ 
     --image $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA \
     --region $_FRONTEND_LOCATION --platform managed --allow-unauthenticated --no-traffic --revision-suffix pr-$_PR_NUMBER-$SHORT_SHA \
-    --update-env-vars BACKEND_SITE=$_BACKEND_SITE,BACKEND_ENV=pr-$_PR_NUMBER
-    gcloud beta run services update-traffic $_FRONTEND_SITE --region $_FRONTEND_LOCATION --platform managed \
-    --update-tags pr-$_PR_NUMBER=$_FRONTEND_SITE-pr-$_PR_NUMBER-$SHORT_SHA
+    --update-env-vars BACKEND_SITE=_TERMINUS_SITE,BACKEND_ENV=pr-$_PR_NUMBER
+    #gcloud beta run services update-traffic $_FRONTEND_SITE --region $_FRONTEND_LOCATION --platform managed \
+    #--update-tags pr-$_PR_NUMBER=$_FRONTEND_SITE-pr-$_PR_NUMBER-$SHORT_SHA
     
 - name: gcr.io/cloud-builders/curl
   id: "internal-notification-frontend" 
