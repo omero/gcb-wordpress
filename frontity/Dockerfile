@@ -2,11 +2,9 @@
 FROM node:12-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
+COPY . .
 
 RUN npm install
-
-COPY . .
 
 RUN npm run build
 
@@ -17,7 +15,7 @@ WORKDIR /app
 
 # Default variables (this change on runtime depending the deployment)
 ENV BACKEND_ENV=dev
-ENV BACKEND_SITE=pantheon-rogers-funny-words
+ENV BACKEND_SITE=gcb-wordpress
 
 ENV PORT 8080
 
