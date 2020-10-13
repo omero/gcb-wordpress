@@ -60,7 +60,7 @@ steps:
     docker push $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA
   dir: frontity
 
-- name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+- name: gcr.io/cloud-builders/gcloud
   id: frontend-cloud-run-deploy
   entrypoint: bash
   args: 
