@@ -99,7 +99,7 @@ steps:
         "{ \
             \"state\": \"success\", \
             \"context\": \"$_TERMINUS_SITE-frontend-main\", \
-            \"description\": \"Frontend Deployed\", \
+            \"description\": \"Frontend Deployed\" \
         }" $_GH_STATUS_URL/$COMMIT_SHA
     fi
   waitFor: 
