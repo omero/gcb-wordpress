@@ -1,14 +1,19 @@
 steps:
+# rememeber change this value wordpress-decoupled-demo -> $_FRONTEND_SITE on --secret
 - name: gcr.io/cloud-builders/gcloud
   id: "internal-get-secrets"
   entrypoint: 'bash'
   args:
   - -c
   - |
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-ssh-key > /root/.ssh/id_pantheon
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
-    gcloud secrets versions access latest --secret=$_FRONTEND_SITE-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-ssh-key > /root/.ssh/id_pantheon
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
+    gcloud secrets versions access latest --secret=wordpress-decoupled-demo-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
 
+
+# Authentication
+# This step get the secrets from GCP secret manager and uses to authenticate via terminus
+# Also takes advantage to send notifications to GH statuses if the GH token exist
 - name: octahedroid/pantheon-gcp-builder
   id: "internal-auth"
   entrypoint: bash
@@ -36,11 +41,77 @@ steps:
             \"context\": \"$_TERMINUS_SITE-backend-pr\", \
             \"description\": \"Build and Deploy backend\" \
         }" $_GH_STATUS_URL
+      curl -X POST -H "Authorization: token $$GITHUB_TOKEN" \
+        --data \
+        "{ \
+            \"state\": \"pending\", \
+            \"context\": \"$_TERMINUS_SITE-frontend-pr\", \
+            \"description\": \"Build and Deploy frontend\" \
+        }" $_GH_STATUS_URL
     fi
 
+- name: gcr.io/cloud-builders/docker
+  id: frontend-docker-build-push
+  entrypoint: bash
+  args:
+  - -c 
+  - |
+    docker build -t $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA .
+    docker push $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA
+  dir: frontity
+  waitFor: 
+    - internal-auth
+
+- name: gcr.io/cloud-builders/gcloud
+  id: frontend-cloud-run-deploy
+  entrypoint: bash
+  args: 
+  - -c 
+  - |
+    gcloud run deploy $_FRONTEND_SITE --image $_FRONTEND_LOCATION-docker.pkg.dev/$PROJECT_ID/$_FRONTEND_SITE/$_FRONTEND_SITE:pr-$_PR_NUMBER-$SHORT_SHA \
+    --region $_FRONTEND_LOCATION --platform managed --memory 512Mi --allow-unauthenticated \
+    --no-traffic --revision-suffix pr-$_PR_NUMBER-$SHORT_SHA \
+    --update-env-vars BACKEND_SITE=_TERMINUS_SITE,BACKEND_ENV=pr-$_PR_NUMBER
+  waitFor: 
+    - frontend-docker-build-push
+
+- name: gcr.io/cloud-builders/gcloud
+  id: frontend-cloud-run-update-traffic
+  entrypoint: bash
+  args: 
+  - -c 
+  - |
+    gcloud beta run services update-traffic $_FRONTEND_SITE \
+    --region $_FRONTEND_LOCATION --platform managed \
+    --update-tags pr-$_PR_NUMBER=$_FRONTEND_SITE-pr-$_PR_NUMBER-$SHORT_SHA
+  waitFor: 
+    - frontend-cloud-run-deploy
+    
+- name: gcr.io/cloud-builders/curl
+  id: "internal-notification-frontend" 
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    source $$BASH_ENV
+    if [ -z "$$GITHUB_TOKEN" ]; then
+      echo "NO GITHUB TOKEN SET"
+      echo "Please input your GITHUB_TOKEN value either in the settings for this project"
+      exit 1
+    else
+      curl -X POST -H "Authorization: token $$GITHUB_TOKEN" \
+        --data \
+        "{ \
+            \"state\": \"success\", \
+            \"context\": \"$_TERMINUS_SITE-frontend-pr\", \
+            \"description\": \"Frontend Deployed\" \
+        }" $_GH_STATUS_URL
+    fi
+  waitFor: 
+    - frontend-cloud-run-update-traffic
 
 - name: octahedroid/pantheon-gcp-builder
-  id: "checkout-from-pantheon"
+  id: "backend-checkout-from-pantheon"
   entrypoint: bash
   args:
   - -c
@@ -72,9 +143,11 @@ steps:
       git checkout -b $$TERMINUS_ENV
     fi
     ls -la $$PANTHEON_REPO_DIR
-    
+  waitFor: 
+    - internal-auth    
+
 - name: octahedroid/pantheon-gcp-builder
-  id: "mutlidev-cleanup"
+  id: "backend-mutlidev-cleanup"
   entrypoint: bash
   args:
   - -c
@@ -103,9 +176,11 @@ steps:
             fi
         fi
     fi
+  waitFor:
+    - backend-checkout-from-pantheon
 
 - name: octahedroid/pantheon-gcp-builder
-  id: "local-clone-pantheon-repo"
+  id: "backend-local-clone-pantheon-repo"
   entrypoint: bash
   args:
   - -c
@@ -113,9 +188,11 @@ steps:
     rsync -av --exclude='.git'  $$DIR_TO_PUSH $$PANTHEON_REPO_DIR  --delete
     # For easier debugging, show what files have changed.
     git -C $$PANTHEON_REPO_DIR status
-
+  waitFor:
+    - backend-mutlidev-cleanup
+  
 - name: octahedroid/pantheon-gcp-builder
-  id: "commit-code-and-push-pantheon"
+  id: "backend-commit-code-and-push-pantheon"
   entrypoint: bash
   args:
   - -c
@@ -129,9 +206,11 @@ steps:
     # This command will commit any changed files and push to Pantheon.
     # New multidevs will be created as necessary.
     terminus -n build:env:create "$$TERMINUS_SITE.dev" "$$TERMINUS_ENV" --yes $$CLONE_CONTENT --message="CI: sync PR $_PULL_REQUEST_TITLE"
+  waitFor:
+    - backend-local-clone-pantheon-repo
 
 - name: gcr.io/cloud-builders/curl
-  id: "internal-notification" 
+  id: "internal-notification-backend" 
   entrypoint: bash
   args:
   - -c
@@ -151,6 +230,8 @@ steps:
             \"target_url\": \"$$MULTIDEV_SITE_URL\" \
         }" $_GH_STATUS_URL
     fi
+  waitFor:
+    - backend-commit-code-and-push-pantheon
 
 
 options:
