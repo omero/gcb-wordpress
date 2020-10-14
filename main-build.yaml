@@ -45,7 +45,6 @@ steps:
         }" $_GH_STATUS_URL/$COMMIT_SHA
     fi
 
-
 - name: gcr.io/cloud-builders/docker
   id: frontend-docker-build-push
   entrypoint: bash
