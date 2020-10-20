@@ -1,0 +1,78 @@
+name: Deploy and LightHouse
+
+on: [pull_request]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup npm cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Frontity build
+        run: npx frontity build --publicPath=https://frontity-org-$COMMIT_SHA.now.sh/static
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+
+      - name: Deploy to now
+        run: npx now --confirm --token $NOW_TOKEN --meta commit=${GITHUB_SHA} --meta branch=${GITHUB_REF} --scope frontity | tee >(grep '^https:\/\/frontity-org-' > deploy-url.txt)
+        env:
+          NOW_TOKEN: ${{ secrets.NOW_TOKEN }}
+
+      - name: Add comment to pull request
+        uses: iam4x/now-deploy-preview-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.FRONTIBOTITO_GH }}
+          ZEIT_TOKEN: ${{ secrets.NOW_TOKEN }}
+          ZEIT_TEAMID: ${{ secrets.ZEIT_TEAM }}
+
+      - name: Create alias for this deploy
+        run: npx now alias --token $NOW_TOKEN set "$(< deploy-url.txt)" frontity-org-$COMMIT_SHA.now.sh
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          NOW_TOKEN: ${{ secrets.NOW_TOKEN }}
+
+      - name: Save deploy url
+        uses: actions/upload-artifact@v1
+        with:
+          name: deploy-url
+          path: "deploy-url.txt"
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Audit URLs using Lighthouse
+        uses: treosh/lighthouse-ci-action@v2
+        with:
+          runs: 3
+          temporaryPublicStorage: true
+          configPath: ./.github/workflows/lighthouserc.json
+          budgetPath: ./.github/workflows/budget.json
+          urls: |
+            https://frontity-org-$COMMIT_SHA.now.sh/
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          COMMIT_SHA: ${{ github.sha }}
+
+      - name: Save results
+        uses: actions/upload-artifact@v1
+        with:
+          name: lighthouse-results
+          path: ".lighthouseci"

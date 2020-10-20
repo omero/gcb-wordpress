@@ -1,0 +1,6 @@
+name: gcb-wordpress
+recipe: pantheon
+config:
+  framework: wordpress
+  site: gcb-wordpress
+  id: 1807736a-9a9f-4230-808d-0c01a9d80626

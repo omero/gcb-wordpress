@@ -4,9 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
+RUN npm install --only=production
 
-RUN npm run build
+RUN npx frontity build
 
 # Exec
 FROM node:12-alpine
@@ -18,7 +18,8 @@ ENV BACKEND_ENV=dev
 ENV BACKEND_SITE=gcb-wordpress
 
 ENV PORT 8080
+EXPOSE 8080
 
 COPY --from=builder /app .
 
-CMD [ "npm", "run", "serve" ]
+CMD [ "node", "server.js"]
