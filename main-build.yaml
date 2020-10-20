@@ -80,7 +80,7 @@ steps:
     --region $_FRONTEND_LOCATION --platform managed \
     --update-tags dev-$SHORT_SHA=$_FRONTEND_SITE-dev-$SHORT_SHA
 
-    gcloud run services update-traffic --platform managed --region $_FRONTEND_LOCATION --to-latest
+    gcloud run services update-traffic $_FRONTEND_SITE --platform managed --region $_FRONTEND_LOCATION --to-latest
 
   waitFor: 
     - frontend-cloud-run-deploy
