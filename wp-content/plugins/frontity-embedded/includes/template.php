@@ -6,7 +6,7 @@
 
 if (isset($_ENV['PANTHEON_ENVIRONMENT']) && $_ENV['PANTHEON_ENVIRONMENT'] != 'lando') {
   echo $_ENV['PANTHEON_ENVIRONMENT'];
-  $frontity_server = 'https://pr-3---gcb-wordpress-aelui2yqua-uc.a.run.app';  
+  $frontity_server = 'https://gcb-wordpress-aelui2yqua-uc.a.run.app';  
 }
 else{
   $frontity_server = 'http://localhost:3000';  
