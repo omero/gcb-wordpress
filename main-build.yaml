@@ -79,6 +79,7 @@ steps:
     gcloud beta run services update-traffic $_FRONTEND_SITE \
     --region $_FRONTEND_LOCATION --platform managed \
     --update-tags dev-$SHORT_SHA=$_FRONTEND_SITE-dev-$SHORT_SHA
+    
     gcloud run services update-traffic --to-latest
 
   waitFor: 
