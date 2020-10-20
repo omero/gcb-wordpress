@@ -9,7 +9,7 @@ steps:
     gcloud secrets versions access latest --secret=wordpress-decoupled-demo-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
     gcloud secrets versions access latest --secret=wordpress-decoupled-demo-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
 
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/$PROJECT_ID/pantheon-gcp-builder
   id: "internal-auth"
   entrypoint: bash
   args:
@@ -108,7 +108,7 @@ steps:
   waitFor: 
     - frontend-cloud-run-update-traffic
 
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/$PROJECT_ID/pantheon-gcp-builder
   id: "backend-checkout-from-pantheon"
   entrypoint: bash
   args:
@@ -144,7 +144,7 @@ steps:
   waitFor: 
     - internal-auth
        
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/$PROJECT_ID/pantheon-gcp-builder
   id: "backend-mutlidev-cleanup"
   entrypoint: bash
   args:
@@ -177,7 +177,7 @@ steps:
   waitFor:
     - backend-checkout-from-pantheon
 
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/$PROJECT_ID/pantheon-gcp-builder
   id: "backend-local-clone-pantheon-repo"
   entrypoint: bash
   args:
@@ -189,7 +189,7 @@ steps:
   waitFor:
     - backend-mutlidev-cleanup
 
-- name: octahedroid/pantheon-gcp-builder
+- name: gcr.io/$PROJECT_ID/pantheon-gcp-builder
   id: "backend-commit-code-and-push-pantheon"
   entrypoint: bash
   args:
