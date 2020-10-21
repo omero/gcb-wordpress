@@ -1,12 +1,16 @@
 steps:
 
-- name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon" ]
+steps:
 
 - name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token" ]
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    gcloud secrets versions access latest --secret=gcb-wordpress-ssh-key > /root/.ssh/id_pantheon
+    gcloud secrets versions access latest --secret=gcb-wordpress-terminus-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/terminus-token
+    gcloud secrets versions access latest --secret=gcb-wordpress-github-token --format='get(payload.data)' | tr '_-' '/+' | base64 -d > /tmp/build/github-token
+    
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -15,18 +19,7 @@ steps:
   - |
     /build-tools-ci/scripts/set-environment
     export TERMINUS_TOKEN=$(cat /tmp/build/terminus-token)
-    (
-      echo "export TERMINUS_TOKEN='$$TERMINUS_TOKEN'"
-    ) >> $$BASH_ENV
-    
-
-- name: octahedroid/pantheon-gcp-builder
-  entrypoint: bash
-  args:
-  - -c
-  - |
-    source /tmp/build/vars
-    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"
+    terminus -n auth:login --machine-token="$$TERMINUS_TOKEN"    
 
 - name: octahedroid/pantheon-gcp-builder
   entrypoint: bash
@@ -67,6 +60,7 @@ steps:
   - -c
   - |
     source /tmp/build/vars
+    export GITHUB_TOKEN=$(cat /tmp/build/github-token)
     if [[ $$TERMINUS_ENV = ci-* || $$TERMINUS_ENV = pr-*   ]]
     then
         echo "May need to delete old ci- or pr- environments to make room for this one"
