@@ -236,7 +236,7 @@ steps:
             \"event\": \"COMMENT\", \
             \"body\": \"[![Visit ${_TERMINUS_SITE}-backend-pr site](https://raw.githubusercontent.com/pantheon-systems/terminus-build-tools-plugin/master/assets/images/visit-site-36.png)]($$MULTIDEV_SITE_URL)\n\n\
       Created draft environment [${_TERMINUS_SITE}-backend-pr]($$MULTIDEV_SITE_URL) for ${_TERMINUS_SITE}\n\" \
-        }" ${_GH_SELF_URL}/reviews
+        }" ${_GH_REVIEW_URL}
     fi
   waitFor:
     - backend-commit-code-and-push-pantheon
