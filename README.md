@@ -30,3 +30,8 @@ If you would like to keep a separate set of configuration for local development,
 
 ![alt](http://i.imgur.com/fzIeQBP.png, '')
 
+### 5. Extra documentation
+
+To get details about the process beneath the site spin-up, we recommend to check the following links:
+
+- [Configuration of a project](docs/configure-project.md)
